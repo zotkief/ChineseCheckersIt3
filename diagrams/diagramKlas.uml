@@ -1,0 +1,268 @@
+@startuml
+
+title Diagram klas chinskich warcab
+
+' pakiety
+package "Server Side" {
+    class Server {
+        - games : List<Game>
+        - clients : List<ClientHandler>
+        - port : int
+        - serverSocket : ServerSocket
+        - EXECUTOR : ExecutorService
+        + startServer() : void
+        + acceptConnections() : void
+        + removeClient(client : ClientHandler) : void
+        + createGameSession(int : playerCount) : void
+        + main() : void
+    }
+
+    class ClientHandler implements Runnable {
+        - socket : Socket
+        - out : OutputStream
+        - in : InputStream
+        + run() : void
+        + send(msg : Message) : void
+    }
+}
+
+package "Client Side" {
+    class Client {
+        design pattern: Observer
+        --
+        - socket : Socket
+        - out : OutputStream
+        - in : InputStream
+        - scanner : Scanner
+        - running : boolean
+        + start() : void
+        + connectToServer() : void
+        + sendMove(move : Move) : void
+        + receiveUpdate(msg : Message) : void
+        + main() : void
+    }
+
+}
+
+package "Game Logic" {
+    class Game {
+        - board : Board
+        - players : List<Player>
+        - currentPlayer : Player
+        + addPlayer(player : Player) : void
+        + startGame() : void
+        + processMove(move : Move) : void
+        + isValidMove(move : Move) : boolean
+        + nextTurn() : void
+    }
+
+    class Player {
+        Design pattern: Factory?
+        --
+        - name : String
+        - color : Color
+        - pieces : List<Piece>
+        + makeMove() : Move
+    }
+
+    class Move {
+        Design pattern: Command
+        --
+        - from : Position
+        - to : Position
+        - player : Player
+        + execute(board : Board) : void
+    }
+}
+
+package "Communication" {
+    interface Message {
+        + getType() : MessageType
+    }
+
+    enum MessageType {
+        MOVE
+        UPDATE
+        GEN
+    }
+
+    class GenMessage {
+        - playerCount : int
+        + GenMessage(content : String)
+        + getPlayerCount() : int
+        + getType() : MessageType
+    }
+
+    class MoveMessage {
+        - move : Move
+        + MoveMessage(move : Move)
+        + getMove() : Move
+        + getType() : MessageType
+    }
+
+    class UpdateMessage {
+        - content : String
+        + UpdateMessage(String:content)
+        + getContent() : String
+        + getType() : MessageType
+    }
+}
+package boards {
+
+    class Cell {
+        - position : Position
+        - piece : Piece
+        + Cell(position : Position)
+        + isOccupied() : boolean
+    }
+
+    class Piece {
+        - owner : Player
+        - position : Position
+        + moveTo(pos : Position) : void
+    }
+    class Position {
+        - q : int
+        - r : int
+        + Position(q : int, r : int)
+        + getQ() : int
+        + getR() : int
+        + getNeighbors() : List<Position>
+        + equals(o : Object) : boolean
+        + hashCode() : int
+    }
+    abstract class AbstractBoard {
+        - Map<Position, Cell> cells
+        - List<Position> movements
+        - final ArrayList<Player> winners
+
+        + AbstractBoard()
+        + abstract void setMovements()
+        + Map<Position, Cell> getCells()
+        + List<Position> getMovements()
+        + abstract void makeMove(Move move)
+        + boolean compareCell(Position position, Player player)
+        + int getWinnersNumber()
+        + abstract void generate(AbstractRules rules)
+        + List<Player> addPlayers(List<Player> adder)
+    }
+    class CCBoard extends AbstractBoard
+
+}
+package builders {
+    class YYBuilder  extends GameBuilder{
+        + void setBoard()
+        + void setRules(int count)
+        + Game getGame()
+    }
+    abstract class GameBuilder {
+        - Game game
+        + abstract void setBoard()
+        + abstract void setRules(int count)
+        + abstract Game getGame()
+    }
+    class FastPacedBuilder extends GameBuilder{
+        + void setBoard()
+        + void setRules(int count)
+        + Game getGame()
+    }
+    class Director {
+        + static Game createGame(GameBuilder builder, int playerCount)
+    }
+    class CCBuilder  extends GameBuilder{
+        + void setBoard()
+        + void setRules(int count)
+        + Game getGame()
+    }
+    Director --> GameBuilder
+
+}
+package rules {
+    class YYRules extends AbstractRules {
+        - int enemy
+    }
+    class CCRules extends AbstractRules {
+    }
+    class FastPasedRules extends AbstractRules {
+    }
+    abstract class AbstractRules {
+        - List<Player> players
+        - Player[] playerDistribution
+
+        + AbstractRules(int count, int maxPlayers)
+        + abstract UpdateMessage isValidMove(AbstractBoard board, Player player, Move move)
+        + abstract Cell configureCell(Position position)
+        + abstract void configureDistribution(AbstractBoard board)
+        + abstract String getGenMessage()
+        + List<Player> getPlayers()
+        + Player getPlayer(int id)
+        + int setStates(List<Player> winners, Player player)
+    }
+
+}
+package states {
+  interface PlayerBehavior {
+        + PlayerState getState()
+        + PlayerBehavior setWin()
+        + PlayerBehavior setActive()
+        + PlayerBehavior setWait()
+    }
+
+    enum PlayerState {
+        WIN
+        ACTIVE
+        WAIT
+    }
+    class ActiveState implements PlayerBehavior {
+        + PlayerState getState()
+        + PlayerBehavior setWin()
+        + PlayerBehavior setActive()
+        + PlayerBehavior setWait()
+    }
+  class WinState implements PlayerBehavior {
+        + PlayerState getState()
+        + PlayerBehavior setWin()
+        + PlayerBehavior setActive()
+        + PlayerBehavior setWait()
+    }
+    PlayerState : WIN
+
+    class WaitState implements PlayerBehavior {
+        + PlayerState getState()
+        + PlayerBehavior setWin()
+        + PlayerBehavior setActive()
+        + PlayerBehavior setWait()
+    }
+}
+
+
+
+
+
+' Relationships
+Server "1" o-- "*" ClientHandler : manages
+
+Client "1" --> "1" ClientHandler : sends messages
+
+Client <--> Message
+
+Server o-- Game : manages
+Game o-- AbstractBoard
+Game o-- Player
+AbstractBoard o-- Cell
+Cell o-- Position
+Piece o-- Position
+Move --> Position
+Player --> PlayerBehavior
+Director --> Game
+Server --> Director
+Game o-- AbstractRules
+
+Game --> Move : processMove()
+
+Message <|-- GenMessage
+Message <|-- MoveMessage
+Message <|-- UpdateMessage
+
+
+@enduml

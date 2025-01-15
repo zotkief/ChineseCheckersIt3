@@ -1,0 +1,28 @@
+@startuml
+actor Player
+participant Client
+participant Server
+participant GameSession
+participant GameLogic
+participant OtherClients as "Other Clients"
+
+Player -> Client: Input Move
+Client -> Server: MoveMessage(move)
+Server -> GameSession: processMove(move, clientHandler)
+GameSession -> GameLogic: isValidMove(move, board, player)
+alt move is valid
+    GameLogic --> GameSession: true
+    GameSession -> GameLogic: applyMove(move, board)
+    GameLogic --> GameSession: board updated
+    GameSession -> Server: move processed
+    Server -> Client: UpdateMessage(board)
+    Server -> OtherClients: UpdateMessage(board)
+    Client -> Player: Display updated board
+    OtherClients -> Players: Display updated board
+else move is invalid
+    GameLogic --> GameSession: false
+    GameSession -> Server: move invalid
+    Server -> Client: ErrorMessage("Invalid move")
+    Client -> Player: Display error message
+end
+@enduml
