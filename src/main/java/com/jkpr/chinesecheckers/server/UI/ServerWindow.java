@@ -55,30 +55,36 @@ public class ServerWindow extends ApplicationAdapter {
         // Add components to the window
         ChoiceBase base = new ChoiceBase();
         String[] typeOptions = base.getKeys();
-        final String[][] playerOptions = {{"wybierz liczbe"}};
 
         typeSelect = new SelectBox<>(skin);
         numberSelect = new SelectBox<>(skin);
+        botSelect = new SelectBox<>(skin);
         submit = new TextButton("submit", skin);
 
         // Set dimensions for UI components
         typeSelect.setHeight(30);
         typeSelect.setWidth(200);
+        botSelect.setHeight(30);
+        botSelect.setWidth(200);
         numberSelect.setHeight(30);
         numberSelect.setWidth(200);
 
         // Initialize select box items
         typeSelect.setItems(typeOptions);
-        numberSelect.setItems(playerOptions[0][0]);
+        numberSelect.setItems(base.getArray(typeSelect.getSelected()));
+        setBotSelect();
 
         // Set positions for components
         typeSelect.setPosition(10, 400);
         numberSelect.setPosition(10, 300);
+        botSelect.setPosition(10, 200);
+
         submit.setPosition(50, 100);
 
         // Add UI components to the window
         window.addActor(typeSelect);
         window.addActor(numberSelect);
+        window.addActor(botSelect);
         window.addActor(submit);
         stage.addActor(window);
 
@@ -87,15 +93,14 @@ public class ServerWindow extends ApplicationAdapter {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 String selected = typeSelect.getSelected();
-                playerOptions[0] = base.getArray(selected);
-                numberSelect.setItems(playerOptions[0]);
+                numberSelect.setItems(base.getArray(selected));
             }
         });
 
         numberSelect.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                String selected = numberSelect.getSelected();
+                setBotSelect();
             }
         });
 
@@ -104,15 +109,23 @@ public class ServerWindow extends ApplicationAdapter {
             public void changed(ChangeEvent event, Actor actor) {
                 System.out.println(typeSelect.getSelected() + " " + numberSelect.getSelected());
 
-                if (!typeSelect.getSelected().equals("Wybierz typ")
-                        && !numberSelect.getSelected().equals("wybierz liczbe")) {
-                    options.setData(typeSelect.getSelected(), numberSelect.getSelected());
-                    Gdx.app.exit();
-                }
+                options.setData(typeSelect.getSelected(),
+                        numberSelect.getSelected(),
+                        botSelect.getSelected());
+                Gdx.app.exit();
             }
         });
     }
-
+    private void setBotSelect()
+    {
+        int number=Integer.parseInt(numberSelect.getSelected());
+        String[] bots=new String[number];
+        for(int i=0;i<number;i++)
+        {
+            bots[i]=String.valueOf(i);
+        }
+        botSelect.setItems(bots);
+    }
     /**
      * Renders the stage and its components, clearing the screen before rendering.
      */

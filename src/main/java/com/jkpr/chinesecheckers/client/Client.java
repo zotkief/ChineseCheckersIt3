@@ -21,7 +21,7 @@ public class Client {
 
     public Client() {
         try {
-            socket = new Socket("192.168.52.51", 12345);
+            socket = new Socket("localhost", 12345);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new Scanner(socket.getInputStream());
             scanner = new Scanner(System.in); // do czytanie wpisu z konsoli klienta

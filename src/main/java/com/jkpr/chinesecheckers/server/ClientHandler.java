@@ -51,12 +51,16 @@ public class ClientHandler implements Runnable {
             while (true) {
                 System.out.println("Waiting for a message from " + playerId);
                 String linia = in.nextLine().trim();
+                System.out.println(linia);
                 if (linia.isEmpty()) {
                     continue;
                 }
                 Message message;
                 try {
-                    message = Message.fromString(linia);
+                    if(linia.equals("SKIP"))
+                        message=new MoveMessage();
+                    else
+                        message = Message.fromString(linia);
                 } catch (Exception e) {
                     continue;
                 }

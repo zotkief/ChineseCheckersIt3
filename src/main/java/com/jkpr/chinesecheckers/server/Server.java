@@ -60,17 +60,18 @@ public class Server {
 
             // Validate number of players
             int numberOfPlayers = Integer.parseInt(options.getPlayerCount());
+            int alivePlayers = numberOfPlayers-Integer.parseInt(options.getBotCount());
             if (numberOfPlayers < 2 || numberOfPlayers > 6 || numberOfPlayers == 5) {
                 System.out.println("Invalid number of players.");
                 return;
             }
 
-            System.out.println("Waiting for " + numberOfPlayers + " players.");
+            System.out.println("Waiting for " + alivePlayers + " players.");
 
             // Wait for the required number of players to connect
-            players = new ClientHandler[numberOfPlayers];
+            players = new ClientHandler[alivePlayers];
             int connectedPlayers = 0;
-            while (connectedPlayers < numberOfPlayers && isRunning) {
+            while (connectedPlayers < alivePlayers && isRunning) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Accepted connection from " + clientSocket.getInetAddress());
 

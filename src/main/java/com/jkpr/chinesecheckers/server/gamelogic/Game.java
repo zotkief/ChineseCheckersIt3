@@ -6,8 +6,10 @@ import com.jkpr.chinesecheckers.server.gamelogic.rules.AbstractRules;
 import com.jkpr.chinesecheckers.server.message.MoveMessage;
 import com.jkpr.chinesecheckers.server.message.UpdateMessage;
 import com.jkpr.chinesecheckers.server.gamelogic.states.PlayerState;
+import javafx.geometry.Pos;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a game of Chinese Checkers.
@@ -40,15 +42,17 @@ public class Game {
      * @return an {@code UpdateMessage} indicating the outcome of the move
      */
     public UpdateMessage nextMove(MoveMessage message, Player player) {
+        System.out.println(message.getSkip()+" "+message.getMove());
         // If the player is not active, the move is invalid.
         if (player.getState() != PlayerState.ACTIVE) {
             return UpdateMessage.fromContent("FAIL");
         }
+        System.out.println(message.getSkip());
         // If the player chose to skip, update the player states and return a skip message.
         if (message.getSkip()) {
             return UpdateMessage.fromContent("SKIP NEXT_ID " + rules.setStates(new ArrayList<>(), player));
         }
-        System.out.println(message.serialize());
+        //System.out.println(message.serialize());
         // Otherwise, validate and process the move.
         return rules.isValidMove(board, player, message.getMove());
     }
@@ -94,5 +98,21 @@ public class Game {
      */
     public String getGenMessage() {
         return rules.getGenMessage();
+    }
+    public Position getTarget(Player player){
+        return rules.getTarget(player);
+    }
+    public List<Position> getLegalMoves(Player player,Position start){
+        List<Position> positions=new ArrayList<>();
+        rules.findPossibilities(board,positions,player,start);
+        return positions;
+    }
+    public List<Position> getPiecePositions(Player player){
+        List<Position> positions=new ArrayList<>();
+        for(Position pos:board.getCells().keySet()){
+            if(board.getCells().get(pos).checkPlayer(player))
+                positions.add(pos);
+        }
+        return positions;
     }
 }

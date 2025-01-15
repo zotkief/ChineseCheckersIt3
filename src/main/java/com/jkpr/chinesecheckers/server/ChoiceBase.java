@@ -20,9 +20,6 @@ public class ChoiceBase {
      * The game types include "Standard", "Fast Paced", and "Yin and Yang", with varying allowed player counts.
      */
     public ChoiceBase() {
-        base.put("Wybierz typ", new String[]{"wybierz liczbe"});
-        types.add("Wybierz typ");
-
         base.put("Standard", new String[]{"2", "3", "4", "6"});
         types.add("Standard");
 

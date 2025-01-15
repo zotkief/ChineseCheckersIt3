@@ -18,6 +18,7 @@ public class GameAdapter {
 
     /** List of connected clients (players). */
     private List<ClientHandler> clients = new ArrayList<>();
+    private List<Bot> bots=new ArrayList<>();
 
     /** Mapping between client handlers and their respective players in the game. */
     private final HashMap<ClientHandler, Player> clientHandlerPlayerHashMap;
@@ -34,15 +35,16 @@ public class GameAdapter {
      * @param options The game options selected by the server or players.
      */
     public GameAdapter(ClientHandler[] players, Server server, GameOptions options) {
+        int numberOfPlayers=Integer.parseInt(options.getPlayerCount());
         switch (options.getGameType()) {
             case "Fast Paced":
-                game = Director.createGame(new FastPacedBuilder(), players.length);
+                game = Director.createGame(new FastPacedBuilder(), numberOfPlayers);
                 break;
             case "Yin and Yang":
-                game = Director.createGame(new YYBuilder(), 0);
+                game = Director.createGame(new YYBuilder(), 2);
                 break;
             default:
-                game = Director.createGame(new CCBuilder(), players.length);
+                game = Director.createGame(new CCBuilder(), numberOfPlayers);
         }
 
         game.generate();
@@ -56,7 +58,10 @@ public class GameAdapter {
             int id = clientHandlerPlayerHashMap.get(clientHandler).getId();
             GenMessage message = new GenMessage(game.getGenMessage() + id);
             clientHandler.sendMessage(message);
-            UpdateMessage message1 = new UpdateMessage("SKIP NEXT_ID 0");
+        }
+        for (int i=players.length;i<numberOfPlayers;i++)
+        {
+            bots.add(new Bot(game.join(),game,this));
         }
     }
 
@@ -70,27 +75,33 @@ public class GameAdapter {
     }
 
     /**
-     * Processes a move sent by a player and returns an update message based on the game state.
-     *
-     * @param move          The move message containing the player's move.
-     * @param clientHandler The client handler representing the player who made the move.
-     * @return An {@link UpdateMessage} containing the game state after processing the move.
-     */
-    public UpdateMessage processMove(MoveMessage move, ClientHandler clientHandler) {
-        return game.nextMove(move, clientHandlerPlayerHashMap.get(clientHandler));
-    }
-
-    /**
      * Broadcasts the result of a player's move to all connected clients.
      *
      * @param move          The move message containing the player's move.
      * @param clientHandler The client handler representing the player who made the move.
      */
     public void brodcastMessage(MoveMessage move, ClientHandler clientHandler) {
+        System.out.println("123"+move.getSkip());
         UpdateMessage updateMessage = game.nextMove(move, clientHandlerPlayerHashMap.get(clientHandler));
         for (ClientHandler player : clients) {
             // System.out.println("Sending message to " + player.getPlayerId());
             player.sendMessage(updateMessage);
+        }
+        for(Bot bot:bots)
+        {
+            bot.broadcastMessage(updateMessage);
+        }
+    }
+    public void brodcastBotMessage(MoveMessage move, Player player) {
+        System.out.println("456"+move.getSkip());
+        UpdateMessage updateMessage = game.nextMove(move, player);
+        for (ClientHandler handler : clients) {
+            // System.out.println("Sending message to " + player.getPlayerId());
+            handler.sendMessage(updateMessage);
+        }
+        for(Bot bot:bots)
+        {
+            bot.broadcastMessage(updateMessage);
         }
     }
 

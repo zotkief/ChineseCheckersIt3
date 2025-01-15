@@ -43,8 +43,8 @@ public class CCRules extends AbstractRules {
         }
         return UpdateMessage.fromContent("FAIL");
     }
-
-    private void findPossibilities(AbstractBoard board, List<Position> alreadyVisited, Player player, Position start) {
+    @Override
+    public void findPossibilities(AbstractBoard board, List<Position> alreadyVisited, Player player, Position start) {
         for (Position move : board.getMovements()) {
             Position potentialMove = new Position(start, move);
             if (isMoveLegal(board, potentialMove, player)) {
@@ -241,5 +241,34 @@ public class CCRules extends AbstractRules {
     @Override
     public String getGenMessage() {
         return "CC "+players.size()+" ";
+    }
+    @Override
+    public Position getTarget(Player player){
+        for(int i=0;i<playerDistribution.length;i++)
+        {
+            if(player.equals(playerDistribution[i]))
+            {
+                return findTarget(i);
+            }
+        }
+        return null;
+    }
+    private Position findTarget(int DId){
+        switch(DId){
+            case 0:
+                return new Position(-4,8);
+            case 1:
+                return new Position(-8,4);
+            case 2:
+                return new Position(-4,-4);
+            case 3:
+                return new Position(4,-8);
+            case 4:
+                return new Position(8,-4);
+            case 5:
+                return new Position(4,4);
+            default:
+                return null;
+        }
     }
 }

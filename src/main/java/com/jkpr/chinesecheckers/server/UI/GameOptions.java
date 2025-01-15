@@ -7,6 +7,7 @@ package com.jkpr.chinesecheckers.server.UI;
 public class GameOptions {
     private String gameType;
     private String playerCount;
+    private String botCount;
 
     /**
      * Sets the game type and player count based on the user's selection.
@@ -14,9 +15,10 @@ public class GameOptions {
      * @param gameType The type of the game selected by the user (e.g., "Standard", "Fast Paced").
      * @param playerCount The number of players for the game (e.g., "2", "3", "4", "6").
      */
-    public void setData(String gameType, String playerCount) {
+    public void setData(String gameType, String playerCount,String botCount) {
         this.gameType = gameType;
         this.playerCount = playerCount;
+        this.botCount=botCount;
     }
 
     /**
@@ -36,4 +38,5 @@ public class GameOptions {
     public String getPlayerCount() {
         return playerCount;
     }
+    public String getBotCount(){return botCount;}
 }
