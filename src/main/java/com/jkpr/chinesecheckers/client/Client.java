@@ -17,6 +17,7 @@ public class Client {
     private Scanner in;
     private AbstractBoardClient board;
     private Consumer<AbstractBoardClient> onBoardGenerated;
+    private Consumer<Integer> onWinCallback;
     private Runnable onBoardUpdate;
 
     public Client() {
@@ -47,6 +48,9 @@ public class Client {
     }
     public void setOnBoardUpdate(Runnable onBoardUpdate) {
         this.onBoardUpdate = onBoardUpdate;
+    }
+    public void setOnWinCallback(Consumer<Integer> onWinCallback) {
+        this.onWinCallback = onWinCallback;
     }
 
 
@@ -88,12 +92,44 @@ public class Client {
                                     Integer.parseInt(message[3]),
                                     Integer.parseInt(message[4]));
                             board.makeMove(move);
-                            board.processNext(Integer.parseInt(message[6]));
+
+                            int winnerId=-1;
+                            int nextId=-1;
+
+                            int i=5;
+                            while(i<message.length){
+                                switch (message[i]){
+                                    case "NEXT_ID":
+                                        nextId=Integer.parseInt(message[6]);
+                                        break;
+                                    case "WIN_ID":
+                                        if(message.length==10){
+                                            winnerId=Integer.parseInt(message[8]);
+                                        }
+                                        break;
+                                    case "END":
+                                        i = message.length -1;
+                                        break;
+                                }
+                                i++;
+                            }
+                            if(winnerId!=-1 && onWinCallback!=null){
+                                board.processWin(winnerId);
+                                onWinCallback.accept(winnerId);
+                                //mamy winnera!
+                            }
+                            if(nextId!=-1){
+                                System.out.println("nastepny ruch gracza "+nextId);
+                                board.processNext(nextId);
+                            }
+                            break;
+                            /*board.processNext(Integer.parseInt(message[6]));
+
                             int i=8;
                             while(i<message.length){
                                 board.processWin(Integer.parseInt(message[i]));
                                 i++;
-                            }
+                            }*/
                     }
                     if(onBoardUpdate != null){
                         onBoardUpdate.run();

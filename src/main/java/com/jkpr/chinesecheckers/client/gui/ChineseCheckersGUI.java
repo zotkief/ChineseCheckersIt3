@@ -10,6 +10,9 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
 
 public class ChineseCheckersGUI extends Application {
     private Client client;
@@ -39,6 +42,11 @@ public class ChineseCheckersGUI extends Application {
                 scorePanel.refresh();
             });
         });
+        client.setOnWinCallback((Integer winnerId) -> {
+            Platform.runLater(() -> {
+                showEndGameScreen(winnerId);
+            });
+        });
     }
 
     private void handleBoardGenerated(AbstractBoardClient board) {
@@ -52,6 +60,22 @@ public class ChineseCheckersGUI extends Application {
             stage.setTitle("Chinese Checkers - Gracz " + board.getId());
             scorePanel.refresh();
         });
+    }
+
+    private void showEndGameScreen(int winnerId) {
+        Label winnerLabel = new Label("Gracz " + winnerId + " wygrał!");
+        winnerLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: green;");
+        Button exitButton = new Button("Wyjdź");
+        exitButton.setOnAction(e -> {
+            Platform.exit();
+        });
+        VBox endGameBox = new VBox(20, winnerLabel, exitButton);
+        endGameBox.setAlignment(javafx.geometry.Pos.CENTER);
+        root.setTop(null);
+        root.setCenter(endGameBox);
+
+        root.setCenter(winnerLabel);
+
     }
 
     public static void main(String[] args) {
