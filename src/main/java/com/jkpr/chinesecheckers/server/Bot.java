@@ -1,15 +1,15 @@
-package com.jkpr.chinesecheckers.server.gamelogic;
+package com.jkpr.chinesecheckers.server;
 
-import com.jkpr.chinesecheckers.server.GameAdapter;
+import com.jkpr.chinesecheckers.server.gamelogic.Game;
+import com.jkpr.chinesecheckers.server.gamelogic.Player;
 import com.jkpr.chinesecheckers.server.gamelogic.boards.Position;
+import com.jkpr.chinesecheckers.server.message.Message;
 import com.jkpr.chinesecheckers.server.message.MoveMessage;
 import com.jkpr.chinesecheckers.server.message.UpdateMessage;
-import javafx.geometry.Pos;
 
 import java.util.List;
-import java.util.ArrayList;
 
-public class Bot {
+public class Bot implements PlayerHandler{
     private Player player;
     private Game game;
     private GameAdapter gameAdapter;
@@ -21,10 +21,12 @@ public class Bot {
 
         target=game.getTarget(player);
     }
-    public void broadcastMessage(UpdateMessage message) {
-        System.out.println("broadcast"+message.content+" id"+ player.getId());
+    @Override
+    public void sendMessage(Message message) {
+        UpdateMessage update=(UpdateMessage)message;
+        System.out.println("broadcast"+update.content+" id"+ player.getId());
 
-        String[] parts = message.content.split(" ");
+        String[] parts = update.content.split(" ");
         int i=0;
         while(i< parts.length-1)
         {
@@ -36,11 +38,16 @@ public class Bot {
             i++;
         }
     }
+    @Override
+    public void assignGameAdapter(GameAdapter gameAdapter) {
+        this.gameAdapter=gameAdapter;
+    }
+
     private void makeMove(){
         System.out.println("makeMove");
         List<Position> pieces=game.getPiecePositions(player);
         MoveMessage move=null;
-        int min=100;
+        int min=100,maxDest=0;
         for(Position pos:pieces){
             List<Position> destinations=game.getLegalMoves(player,pos);
             for(Position destination:destinations)
@@ -53,9 +60,19 @@ public class Bot {
                 int dystart=Math.abs(pos.getY()-target.getY());
                 int dzstart=Math.abs(pos.getX()+pos.getY()-target.getX()-target.getY());
 
-                int destLen=dxdest+dydest+dzdest-dxstart-dystart-dzstart;
+                int dStart=dxstart+dystart+dzstart;
+                int dDest=dxdest+dydest+dzdest;
+
+                int destLen=dDest-dStart;
 
                 if(destLen<min)
+                {
+                    move=new MoveMessage(pos.getX(),pos.getY(),
+                            destination.getX(),destination.getY());
+                    min=destLen;
+                    maxDest=dStart;
+                }
+                else if(destLen==min && dStart>maxDest)
                 {
                     move=new MoveMessage(pos.getX(),pos.getY(),
                             destination.getX(),destination.getY());
@@ -66,11 +83,11 @@ public class Bot {
         }
         if(!(move==null))
         {
-            gameAdapter.brodcastBotMessage(move,player);
+            gameAdapter.broadcastMessage(move,this);
         }
         else
         {
-            gameAdapter.brodcastBotMessage(new MoveMessage(),player);
+            gameAdapter.broadcastMessage(new MoveMessage(),this);
         }
     }
 }

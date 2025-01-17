@@ -31,9 +31,8 @@ public abstract class GameBuilder {
      * The rules define how the game is played, including any player actions, win conditions, etc.
      * </p>
      *
-     * @param count the number of players in the game
      */
-    public abstract void setRules(int count);
+    public abstract void setRules();
 
     /**
      * Returns the fully constructed game.

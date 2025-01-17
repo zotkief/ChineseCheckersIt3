@@ -21,9 +21,9 @@ public class Director {
      * @param builder the {@code GameBuilder} used to create the game
      * @return the fully constructed {@code Game}
      */
-    public static Game createGame(GameBuilder builder, int playerCount) {
+    public static Game createGame(GameBuilder builder) {
         builder.setBoard();
-        builder.setRules(playerCount);
+        builder.setRules();
         return builder.getGame();
     }
 }

@@ -11,7 +11,7 @@ import java.util.Scanner;
  * It processes incoming messages from the client and broadcasts relevant messages to all players in the game.
  * This class implements the {@link Runnable} interface to support multi-threaded handling of clients.
  */
-public class ClientHandler implements Runnable {
+public class ClientHandler implements Runnable,PlayerHandler {
 
     /** The socket for communicating with the client. */
     private Socket clientSocket;
@@ -70,7 +70,7 @@ public class ClientHandler implements Runnable {
                     if (gameAdapter == null) {
                         continue;
                     } else {
-                        gameAdapter.brodcastMessage(msg, this);
+                        gameAdapter.broadcastMessage(msg, this);
                     }
                 } else {
                     // Unknown message type
@@ -89,6 +89,7 @@ public class ClientHandler implements Runnable {
      *
      * @param message The message to be sent to the client.
      */
+    @Override
     public void sendMessage(Message message) {
         try {
             out.println(message.serialize());
@@ -100,34 +101,13 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Returns the unique ID of the player associated with this client.
-     *
-     * @return The player's unique identifier.
-     */
-    public String getPlayerId() {
-        return playerId;
-    }
-
-    /**
      * Assigns a {@link GameAdapter} to this client handler, allowing it to participate in a game session.
      *
      * @param gameAdapter The game adapter that will manage game logic for this client.
      */
+    @Override
     public void assignGameAdapter(GameAdapter gameAdapter) {
         this.gameAdapter = gameAdapter;
-    }
-
-    /**
-     * Closes the connection to the client.
-     * Used to terminate the session when the client disconnects or an error occurs.
-     */
-    public void closeConnection() {
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            System.err.println("Error closing client socket");
-            e.printStackTrace();
-        }
     }
 
     /**

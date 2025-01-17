@@ -208,13 +208,13 @@ public class YYRules extends AbstractRules{
             case 1:
                 return new Position(-8,4);
             case 2:
-                return new Position(-4,4);
+                return new Position(-4,-4);
             case 3:
                 return new Position(4,-8);
             case 4:
                 return new Position(8,-4);
             case 5:
-                return new Position(4,-4);
+                return new Position(4,4);
             default:
                 return null;
         }

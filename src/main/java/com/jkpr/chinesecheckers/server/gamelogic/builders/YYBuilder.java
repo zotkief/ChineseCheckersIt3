@@ -33,10 +33,9 @@ public class YYBuilder extends GameBuilder {
      * for the "YY" version of Chinese Checkers.
      * </p>
      *
-     * @param count the number of players in the game
      */
     @Override
-    public void setRules(int count) {
+    public void setRules() {
         game.setRules(new YYRules());
     }
 
