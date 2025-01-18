@@ -13,6 +13,8 @@ import com.jkpr.chinesecheckers.server.gamelogic.boards.CCBoard;
  */
 public class FastPacedBuilder extends GameBuilder {
 
+    private int count;
+    public FastPacedBuilder(int count){this.count=count;}
     /**
      * Sets up the board for the fast-paced game.
      * <p>
@@ -31,10 +33,9 @@ public class FastPacedBuilder extends GameBuilder {
      * tailored for a fast-paced variant of Chinese Checkers.
      * </p>
      *
-     * @param count the number of players in the game
      */
     @Override
-    public void setRules(int count) {
+    public void setRules() {
         game.setRules(new FastPacedRules(count));
     }
 

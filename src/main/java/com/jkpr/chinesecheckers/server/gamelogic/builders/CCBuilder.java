@@ -14,7 +14,8 @@ import com.jkpr.chinesecheckers.server.gamelogic.boards.CCBoard;
  */
 public class CCBuilder extends GameBuilder {
 
-
+    private int players;
+    public CCBuilder(int players){this.players=players;}
     /**
      * Sets up the board for a Chinese checkers game.
      * <p>
@@ -27,7 +28,7 @@ public class CCBuilder extends GameBuilder {
     }
 
     @Override
-    public void setRules(int count){game.setRules(new CCRules(count));}
+    public void setRules(){game.setRules(new CCRules(players));}
 
     /**
      * Returns the fully constructed Chinese checkers game.

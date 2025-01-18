@@ -76,7 +76,6 @@ public class Server {
                 System.out.println("Accepted connection from " + clientSocket.getInetAddress());
 
                 ClientHandler handler = new ClientHandler(clientSocket);
-                System.out.println("Adding player " + handler.getPlayerId() + " to the queue.");
                 players[connectedPlayers] = handler;
                 threadPool.execute(handler);
                 connectedPlayers++;
