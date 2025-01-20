@@ -11,8 +11,7 @@
 /* moves:
  * moveId int auto_increment primary key,
  * gameId int,
- * from varchar(10),
- * to varchar(10),
+ * data varchar(50),
  * timestamp timestamp not null,
  * foreign key (gameId) references games(gameId)
  */
@@ -35,27 +34,39 @@ public class DatabaseManager {
     private final JdbcTemplate jdbcTemplate;
     private int gameId;
 
+    @Autowired
     public DatabaseManager(JdbcTemplate template) {
         this.jdbcTemplate = template;
     }
 
-    public List<String> getGames() {
-        String sql = "SELECT gameId, start_time, type FROM games";
+    public List<String> getGamesFinished() {
+        String sql = "SELECT gameId, numberOfPlayers, numberOfBots, start_time, type FROM games WHERE end_time IS NOT NULL";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             int id = rs.getInt("gameId");
+            int players = rs.getInt("numberOfPlayers");
+            int bots = rs.getInt("numberOfBots");
             Timestamp start = rs.getTimestamp("start_time");
             String type = rs.getString("type");
-            return id + " " + start + " " + type;
+            return id + " " + players + " " + bots + " " + start + " " + type;
+        });
+    }
+    public List<String> getGamesInProgress() {
+        String sql = "SELECT gameId, numberOfPlayers, numberOfBots, start_time, type FROM games WHERE end_time IS NULL";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            int id = rs.getInt("gameId");
+            int players = rs.getInt("numberOfPlayers");
+            int bots = rs.getInt("numberOfBots");
+            Timestamp start = rs.getTimestamp("start_time");
+            String type = rs.getString("type");
+            return id + " " + players + " " + bots + " " + start + " " + type;
         });
     }
 
-    public String getMoves() {
-        String sql = "SELECT `from`, `to` FROM moves WHERE gameId = ?";
+    public List<String> getMoves() {
+        String sql = "SELECT data FROM moves WHERE gameId = ?";
         return jdbcTemplate.query(sql, new Object[]{gameId}, (rs, rowNum) -> {
-            String from = rs.getString("from");
-            String to = rs.getString("to");
-            return from + " " + to;
-        }).toString();
+            return rs.getString("data");
+        });
     }
 
     public void createGame(String type, int numberOfPlayers, int numberOfBots) {
@@ -71,27 +82,30 @@ public class DatabaseManager {
         }, keyHolder);
         gameId = Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
-    public void recordMove(String from, String to) {
-        String sql = "INSERT INTO moves (gameId, `from`, `to`, timestamp) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, gameId);
-            stmt.setString(2, from);
-            stmt.setString(3, to);
-            stmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void recordMove(String data) {
+        String sql = "INSERT INTO moves (gameId, data, timestamp) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql,
+                            gameId,
+                            data,
+                            new Timestamp(System.currentTimeMillis()));
     }
-    public void endGame() {
+    public void endGame(int winner) {
         String sql = "UPDATE games SET end_time = ?, winner = ? WHERE gameId = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            stmt.setInt(2, 1);
-            stmt.setInt(3, gameId);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        jdbcTemplate.update(sql,
+                            new Timestamp(System.currentTimeMillis()),
+                            winner,
+                            gameId);
+    }
+    public int countGamesFinished() {
+        String sql = "SELECT COUNT(*) FROM games WHERE end_time IS NOT NULL";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+    public int countGamesInProgress() {
+        String sql = "SELECT COUNT(*) FROM games WHERE end_time IS NULL";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
     }
 }
