@@ -11,6 +11,7 @@ import com.jkpr.chinesecheckers.server.gamelogic.builders.Director;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.FastPacedBuilder;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.YYBuilder;
 import com.jkpr.chinesecheckers.server.message.*;
+import com.jkpr.chinesecheckers.server.strategy.MinDistanceStrategy;
 
 /**
  * The {@code GameAdapter} class is responsible for adapting the game logic to the client-server communication.
@@ -75,7 +76,7 @@ public class GameSession implements Session{
         databaseManager.recordMove("-1 "+game.getGenMessage() + "0");
         for (int i=players.length;i<numberOfPlayers;i++) {
             Player player = game.join();
-            Bot bot = new Bot(player, game, this);
+            Bot bot = new Bot(player, game, this, new MinDistanceStrategy());
             clientHandlerPlayerHashMap.put(bot, player);
             clients.add(bot);
         }
