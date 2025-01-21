@@ -11,12 +11,16 @@ import com.jkpr.chinesecheckers.server.gamelogic.builders.Director;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.FastPacedBuilder;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.YYBuilder;
 import com.jkpr.chinesecheckers.server.message.*;
+import com.jkpr.chinesecheckers.server.sessionState.Prepare;
+import com.jkpr.chinesecheckers.server.sessionState.SessionBehavior;
+import com.jkpr.chinesecheckers.server.sessionState.SessionState;
 
 /**
  * The {@code GameAdapter} class is responsible for adapting the game logic to the client-server communication.
  * It manages the game state, processes moves, and broadcasts updates to all connected players.
  */
 public class LoadSession implements Session {
+    private SessionBehavior state=new Prepare();
 
     /** List of connected clients (players). */
     private List<PlayerHandler> clients=new ArrayList<>();
@@ -38,7 +42,6 @@ public class LoadSession implements Session {
      */
     public LoadSession(ClientHandler[] players, Server server, GameOptions options) {
         int numberOfPlayers=Integer.parseInt(options.getPlayerCount());
-        int numberOfBots=Integer.parseInt(options.getBotCount());
 
 
         databaseManager=new DatabaseManager(DataOperator.jdbcTemplate());
@@ -91,6 +94,7 @@ public class LoadSession implements Session {
                 case "SKIP":
                     id=Integer.parseInt(parts[0]);
                     updateMessage=game.nextMove(new MoveMessage(),new Player(id));
+                    sendMessage(updateMessage);
                     break;
                 default:
                     id=Integer.parseInt(parts[0]);
@@ -98,10 +102,14 @@ public class LoadSession implements Session {
                     int y1=Integer.parseInt(parts[2]);
                     int x2=Integer.parseInt(parts[3]);
                     int y2=Integer.parseInt(parts[4]);
-                    updateMessage=game.nextMove(new MoveMessage(x1,y1,x2,y2),new Player(id));
+                    updateMessage=game.nextMove(new MoveMessage(x1,y1,x2,y2),game.getPlayer(id));
+                    sendMessage(updateMessage);
                     break;
             }
+            System.out.println("123");
         }
+        System.out.println("456");
+        setReady();
     }
     /**
      * Adds a new player to the game and maps the client handler to the player.
@@ -127,12 +135,16 @@ public class LoadSession implements Session {
         {
             databaseManager.endGame(Integer.parseInt(parts[parts.length-2]));
         }
-        databaseManager.recordMove(updateMessage.content);
+        System.out.println("recording");
+        if(state.getState().equals(SessionState.READY))
+            databaseManager.recordMove(clientHandlerPlayerHashMap.get(clientHandler).getId()
+                    +" "+updateMessage.content);
     }
     private void sendMessage(UpdateMessage updateMessage){
         for (PlayerHandler player : clients) {
-            // System.out.println("Sending message to " + player.getPlayerId());
             player.sendMessage(updateMessage);
         }
     }
+    public void setReady(){state=state.setReady();}
+    public void setPrepare(){state=state.setPrepare();}
 }

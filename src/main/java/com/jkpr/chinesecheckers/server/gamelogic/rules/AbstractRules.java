@@ -42,12 +42,15 @@ public abstract class AbstractRules {
 
         player.setWait();
 
+        for(int i=0;i< players.size();i++)
+            System.out.println(players.get(i).getState());
+
         //choosing next player
         Player tempRef=players.get((player.getId()+1)%players.size());
         while(!tempRef.getState().equals(PlayerState.WAIT))
         {
             tempRef=players.get((player.getId()+1)%players.size());
-            System.out.println(tempRef.getState());
+            //System.out.println(tempRef.getState());
         }
         tempRef.setActive();
 

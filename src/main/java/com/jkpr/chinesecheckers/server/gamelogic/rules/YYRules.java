@@ -23,7 +23,7 @@ public class YYRules extends AbstractRules{
     @Override
     public UpdateMessage isValidMove(AbstractBoard board, Player player, Move move) {
         Position start = move.getStart(), destination = move.getEnd();
-        if (!player.getState().equals(PlayerState.ACTIVE))
+        if (!players.get(player.getId()).getState().equals(PlayerState.ACTIVE))
             return UpdateMessage.fromContent("FAIL");
 
         if (board.getCells().containsKey(start) && board.getCells().get(start).checkPlayer(player)) {

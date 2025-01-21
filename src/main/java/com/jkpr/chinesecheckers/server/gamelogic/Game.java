@@ -42,17 +42,10 @@ public class Game {
      * @return an {@code UpdateMessage} indicating the outcome of the move
      */
     public UpdateMessage nextMove(MoveMessage message, Player player) {
-        System.out.println(message.getSkip()+" "+message.getMove());
-        // If the player is not active, the move is invalid.
-        if (player.getState() != PlayerState.ACTIVE) {
-            return UpdateMessage.fromContent("FAIL");
-        }
-        System.out.println(message.getSkip());
         // If the player chose to skip, update the player states and return a skip message.
         if (message.getSkip()) {
             return UpdateMessage.fromContent("SKIP NEXT_ID " + rules.setStates(new ArrayList<>(), player));
         }
-        //System.out.println(message.serialize());
         // Otherwise, validate and process the move.
         return rules.isValidMove(board, player, message.getMove());
     }
@@ -115,4 +108,5 @@ public class Game {
         }
         return positions;
     }
+    public Player getPlayer(int id){return rules.getPlayer(id);}
 }
