@@ -9,7 +9,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.jkpr.chinesecheckers.server.UI.GameOptions;
 import com.jkpr.chinesecheckers.server.UI.ServerWindow;
-import com.jkpr.chinesecheckers.server.message.*;
 
 /**
  * The Server class represents a Chinese Checkers server that handles client connections and game sessions.
@@ -60,11 +59,7 @@ public class Server {
 
             // Validate number of players
             int numberOfPlayers = Integer.parseInt(options.getPlayerCount());
-            int alivePlayers = numberOfPlayers-Integer.parseInt(options.getBotCount());
-            if (numberOfPlayers < 2 || numberOfPlayers > 6 || numberOfPlayers == 5) {
-                System.out.println("Invalid number of players.");
-                return;
-            }
+            int alivePlayers = numberOfPlayers - Integer.parseInt(options.getBotCount());
 
             System.out.println("Waiting for " + alivePlayers + " players.");
 
@@ -83,9 +78,19 @@ public class Server {
 
             // Start the game session
             System.out.println("All players have joined. Creating game session.");
-            GameAdapter gameAdapter = new GameAdapter(players, this, options);
+            Session gameSession;
+
+            if (options.getResponseType() == GameOptions.ResponseType.LOAD) {
+                gameSession = new LoadSession(players, this, options);
+            } else if (options.getResponseType() == GameOptions.ResponseType.WATCH) {
+                gameSession = new WatchSession(players[0], this, options);
+            } else
+            {
+                gameSession = new GameSession(players, this, options);
+            }
+
             for (ClientHandler handler : players) {
-                handler.assignGameAdapter(gameAdapter);
+                handler.assignGameAdapter(gameSession);
             }
 
             // Game loop placeholder

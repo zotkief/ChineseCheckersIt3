@@ -25,6 +25,7 @@ public abstract class AbstractRules {
             players.add(new Player(i));
         playerDistribution=new Player[maxPlayers];
         players.get(0).setActive();
+        System.out.println(players.get(0).getId()+"abc");
     }
     public abstract void findPossibilities(AbstractBoard board, List<Position> alreadyVisited, Player player, Position start);
     public abstract UpdateMessage isValidMove(AbstractBoard board, Player player, Move move);

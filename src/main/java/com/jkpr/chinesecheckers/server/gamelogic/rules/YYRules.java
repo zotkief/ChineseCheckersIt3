@@ -147,7 +147,7 @@ public class YYRules extends AbstractRules{
         {
             output+=" "+player.getId();
         }
-        if (board.getWinnersNumber() == players.size() - 1) {
+        if (board.getWinnersNumber() > 0) {
             output += " END";
         }
         return UpdateMessage.fromContent(output);

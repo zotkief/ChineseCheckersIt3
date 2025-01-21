@@ -4,5 +4,5 @@ import com.jkpr.chinesecheckers.server.message.Message;
 
 public interface PlayerHandler {
     void sendMessage(Message message);
-    void assignGameAdapter(GameAdapter gameAdapter);
+    void assignGameAdapter(Session gameSession);
 }

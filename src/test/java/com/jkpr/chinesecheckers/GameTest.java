@@ -53,7 +53,7 @@ public class GameTest extends TestCase {
 
         UpdateMessage updateMessage=game.nextMove(new MoveMessage(-1,4,-1,5),rules.getPlayer(0));
 
-        assertEquals("-1 4 -1 5 NEXT_ID 1 WIN_ID 0",updateMessage.getContent());
+        assertEquals("-1 4 -1 5 NEXT_ID 1 WIN_ID 0 END",updateMessage.getContent());
     }
     public void testEnd(){
         Game game=new Game();
@@ -76,10 +76,7 @@ public class GameTest extends TestCase {
 
 
         UpdateMessage updateMessage=game.nextMove(new MoveMessage(-1,4,-1,5),rules.getPlayer(0));
-        assertEquals("-1 4 -1 5 NEXT_ID 1 WIN_ID 0",updateMessage.getContent());
-
-        updateMessage=game.nextMove(new MoveMessage(0,-4,-1,-4),rules.getPlayer(1));
-        assertEquals("0 -4 -1 -4 NEXT_ID 2 WIN_ID 1 END",updateMessage.getContent());
+        assertEquals("-1 4 -1 5 NEXT_ID 1 WIN_ID 0 END",updateMessage.getContent());
     }
     public void testSkip(){
         Game game=new Game();

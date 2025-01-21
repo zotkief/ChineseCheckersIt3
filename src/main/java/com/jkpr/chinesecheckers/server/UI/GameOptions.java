@@ -9,6 +9,10 @@ public class GameOptions {
     private String playerCount;
     private String botCount;
 
+    private ResponseType responseType;
+
+    private int gameId;
+
     /**
      * Sets the game type and player count based on the user's selection.
      *
@@ -19,6 +23,7 @@ public class GameOptions {
         this.gameType = gameType;
         this.playerCount = playerCount;
         this.botCount=botCount;
+        responseType=ResponseType.NEW;
     }
 
     /**
@@ -39,4 +44,28 @@ public class GameOptions {
         return playerCount;
     }
     public String getBotCount(){return botCount;}
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setReplay(int gameId) {
+        this.gameId = gameId;
+        responseType=ResponseType.WATCH;
+        playerCount="1";
+        botCount="0";
+    }
+    public void setLoad(int gameId,String numberOfPlayers,String numberOfBots,String type) {
+        this.gameId = gameId;
+        responseType=ResponseType.LOAD;
+        playerCount=numberOfPlayers;
+        botCount=numberOfBots;
+        gameType=type;
+    }
+    public ResponseType getResponseType(){return responseType;}
+    public enum ResponseType{
+        NEW,
+        LOAD,
+        WATCH
+    }
 }

@@ -23,7 +23,7 @@ public class ClientHandler implements Runnable,PlayerHandler {
     private Scanner in;
 
     /** The game adapter to handle game logic and communication between players. */
-    private GameAdapter gameAdapter;
+    private Session gameSession;
 
     /** Unique player identifier. */
     private String playerId;
@@ -67,10 +67,10 @@ public class ClientHandler implements Runnable,PlayerHandler {
 
                 if (message.getType() == MessageType.MOVE) {
                     MoveMessage msg = (MoveMessage) message;
-                    if (gameAdapter == null) {
+                    if (gameSession == null) {
                         continue;
                     } else {
-                        gameAdapter.broadcastMessage(msg, this);
+                        gameSession.broadcastMessage(msg, this);
                     }
                 } else {
                     // Unknown message type
@@ -101,13 +101,13 @@ public class ClientHandler implements Runnable,PlayerHandler {
     }
 
     /**
-     * Assigns a {@link GameAdapter} to this client handler, allowing it to participate in a game session.
+     * Assigns a {@link GameSession} to this client handler, allowing it to participate in a game session.
      *
-     * @param gameAdapter The game adapter that will manage game logic for this client.
+     * @param gameSession The game adapter that will manage game logic for this client.
      */
     @Override
-    public void assignGameAdapter(GameAdapter gameAdapter) {
-        this.gameAdapter = gameAdapter;
+    public void assignGameAdapter(Session gameSession) {
+        this.gameSession = gameSession;
     }
 
     /**

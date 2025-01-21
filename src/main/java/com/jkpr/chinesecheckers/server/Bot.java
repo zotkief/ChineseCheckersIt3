@@ -12,12 +12,12 @@ import java.util.List;
 public class Bot implements PlayerHandler{
     private Player player;
     private Game game;
-    private GameAdapter gameAdapter;
+    private Session gameSession;
     private Position target;
-    public Bot(Player player,Game game,GameAdapter adapter) {
+    public Bot(Player player, Game game, Session adapter) {
         this.game=game;
         this.player=player;
-        this.gameAdapter=adapter;
+        this.gameSession =adapter;
 
         target=game.getTarget(player);
     }
@@ -39,8 +39,8 @@ public class Bot implements PlayerHandler{
         }
     }
     @Override
-    public void assignGameAdapter(GameAdapter gameAdapter) {
-        this.gameAdapter=gameAdapter;
+    public void assignGameAdapter(Session gameSession) {
+        this.gameSession = gameSession;
     }
 
     private void makeMove(){
@@ -83,11 +83,11 @@ public class Bot implements PlayerHandler{
         }
         if(!(move==null))
         {
-            gameAdapter.broadcastMessage(move,this);
+            gameSession.broadcastMessage(move,this);
         }
         else
         {
-            gameAdapter.broadcastMessage(new MoveMessage(),this);
+            gameSession.broadcastMessage(new MoveMessage(),this);
         }
     }
 }
