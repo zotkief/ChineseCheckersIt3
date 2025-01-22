@@ -11,12 +11,15 @@ import com.jkpr.chinesecheckers.server.gamelogic.builders.Director;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.FastPacedBuilder;
 import com.jkpr.chinesecheckers.server.gamelogic.builders.YYBuilder;
 import com.jkpr.chinesecheckers.server.message.*;
+import com.jkpr.chinesecheckers.server.sessionState.Ready;
+import com.jkpr.chinesecheckers.server.sessionState.SessionBehavior;
 
 /**
  * The {@code GameAdapter} class is responsible for adapting the game logic to the client-server communication.
  * It manages the game state, processes moves, and broadcasts updates to all connected players.
  */
 public class GameSession implements Session{
+    private SessionBehavior sessionBehavior=new Ready();
 
     /** List of connected clients (players). */
     private List<PlayerHandler> clients=new ArrayList<>();
@@ -107,6 +110,22 @@ public class GameSession implements Session{
             databaseManager.endGame(Integer.parseInt(parts[parts.length-2]));
         }
     }
+
+    @Override
+    public boolean isReady() {
+        return true;
+    }
+
+    @Override
+    public void setPrepare() {
+
+    }
+
+    @Override
+    public void setReady() {
+
+    }
+
     private void sendMessage(UpdateMessage updateMessage){
         for (PlayerHandler player : clients) {
             // System.out.println("Sending message to " + player.getPlayerId());

@@ -6,6 +6,9 @@ import com.jkpr.chinesecheckers.server.database.DatabaseManager;
 import com.jkpr.chinesecheckers.server.message.GenMessage;
 import com.jkpr.chinesecheckers.server.message.MoveMessage;
 import com.jkpr.chinesecheckers.server.message.UpdateMessage;
+import com.jkpr.chinesecheckers.server.sessionState.Ready;
+import com.jkpr.chinesecheckers.server.sessionState.SessionBehavior;
+import com.jkpr.chinesecheckers.server.sessionState.SessionState;
 
 import java.util.List;
 
@@ -16,6 +19,7 @@ import java.util.List;
  */
 public class WatchSession implements Session {
     private PlayerHandler clients;
+    private SessionBehavior sessionBehavior=new Ready();
 
     /**
      * Constructs a {@code WatchSession} object. This constructor initializes the session
@@ -37,11 +41,13 @@ public class WatchSession implements Session {
         List<String> list = databaseManager.getMoves();
 
         // Send the first move as a GenMessage
-        clients.sendMessage(new GenMessage(list.get(0)));
+        int start = list.get(0).indexOf(' ');
+        GenMessage genMessage=(new GenMessage(list.get(0).substring(start + 1)));
+        clients.sendMessage(genMessage);
 
         // Send the rest of the moves as UpdateMessages, with a delay between each update
         for (int i = 1; i < list.size(); i++) {
-            int start = list.get(i).indexOf(' ');
+            start = list.get(i).indexOf(' ');
             sendMessage(new UpdateMessage(list.get(i).substring(start + 1)));
             try {
                 // Delay between updates to simulate game progress
@@ -62,6 +68,21 @@ public class WatchSession implements Session {
     @Override
     public void broadcastMessage(MoveMessage moveMessage, PlayerHandler clientHandler) {
         // No action taken in this class for broadcasting move messages
+    }
+
+    @Override
+    public boolean isReady() {
+        return sessionBehavior.getState().equals(SessionState.READY);
+    }
+
+    @Override
+    public void setPrepare() {
+
+    }
+
+    @Override
+    public void setReady() {
+
     }
 
     /**

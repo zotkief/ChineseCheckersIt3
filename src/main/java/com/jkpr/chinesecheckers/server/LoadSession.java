@@ -97,7 +97,7 @@ public class LoadSession implements Session {
                     break;
                 case "SKIP":
                     id = Integer.parseInt(parts[0]);
-                    updateMessage = game.nextMove(new MoveMessage(), new Player(id));
+                    updateMessage = game.nextMove(new MoveMessage(), game.getPlayer(id));
                     sendMessage(updateMessage);
                     break;
                 default:
@@ -133,6 +133,10 @@ public class LoadSession implements Session {
      */
     @Override
     public void broadcastMessage(MoveMessage moveMessage, PlayerHandler clientHandler) {
+
+        // Record the move if the session is ready
+        if (!isReady())
+            return;
         UpdateMessage updateMessage = game.nextMove(moveMessage, clientHandlerPlayerHashMap.get(clientHandler));
         sendMessage(updateMessage);
 
@@ -142,10 +146,8 @@ public class LoadSession implements Session {
             databaseManager.endGame(Integer.parseInt(parts[parts.length - 2]));
         }
 
-        // Record the move if the session is ready
-        if (state.getState().equals(SessionState.READY))
-            databaseManager.recordMove(clientHandlerPlayerHashMap.get(clientHandler).getId()
-                    + " " + updateMessage.content);
+        databaseManager.recordMove(clientHandlerPlayerHashMap.get(clientHandler).getId()
+                + " " + updateMessage.content);
     }
 
     /**
@@ -172,4 +174,5 @@ public class LoadSession implements Session {
     public void setPrepare() {
         state = state.setPrepare();
     }
+    public boolean isReady() {return state.getState().equals(SessionState.READY);}
 }
