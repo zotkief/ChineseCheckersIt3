@@ -16,14 +16,15 @@ import com.jkpr.chinesecheckers.server.sessionState.SessionBehavior;
 import com.jkpr.chinesecheckers.server.sessionState.SessionState;
 
 /**
- * The {@code GameAdapter} class is responsible for adapting the game logic to the client-server communication.
- * It manages the game state, processes moves, and broadcasts updates to all connected players.
+ * The {@code LoadSession} class is responsible for initializing and managing a game session.
+ * It adapts the game logic to the client-server communication, including adding players,
+ * processing moves, and broadcasting updates to all connected clients.
  */
 public class LoadSession implements Session {
-    private SessionBehavior state=new Prepare();
+    private SessionBehavior state = new Prepare();
 
     /** List of connected clients (players). */
-    private List<PlayerHandler> clients=new ArrayList<>();
+    private List<PlayerHandler> clients = new ArrayList<>();
 
     /** Mapping between client handlers and their respective players in the game. */
     private HashMap<PlayerHandler, Player> clientHandlerPlayerHashMap;
@@ -33,21 +34,21 @@ public class LoadSession implements Session {
     private DatabaseManager databaseManager;
 
     /**
-     * Constructs a {@code GameAdapter} object that creates a new game based on the provided game options,
+     * Constructs a {@code LoadSession} object that creates a new game based on the provided game options,
      * and initializes the mapping between clients and players.
      *
      * @param players Array of client handlers representing the players.
-     * @param server  The server managing the game session.
+     * @param server The server managing the game session.
      * @param options The game options selected by the server or players.
      */
     public LoadSession(ClientHandler[] players, Server server, GameOptions options) {
-        int numberOfPlayers=Integer.parseInt(options.getPlayerCount());
+        int numberOfPlayers = Integer.parseInt(options.getPlayerCount());
 
-
-        databaseManager=new DatabaseManager(DataOperator.jdbcTemplate());
+        // Initialize database manager and set the game ID for history retrieval
+        databaseManager = new DatabaseManager(DataOperator.jdbcTemplate());
         databaseManager.setGameId(options.getGameId());
 
-
+        // Create a game based on the selected game type
         switch (options.getGameType()) {
             case "Fast Paced":
                 game = Director.createGame(new FastPacedBuilder(numberOfPlayers));
@@ -62,11 +63,12 @@ public class LoadSession implements Session {
         game.generate();
         clientHandlerPlayerHashMap = new HashMap<>();
 
-        for(ClientHandler handler : players)
-        {
+        // Add players and assign game adapters
+        for (ClientHandler handler : players) {
             this.clients.add(handler);
         }
 
+        // Map each client handler to a player and send the generated message to each client
         for (ClientHandler clientHandler : players) {
             addPlayer(clientHandler);
             clientHandler.assignGameAdapter(this);
@@ -75,34 +77,36 @@ public class LoadSession implements Session {
             GenMessage message = new GenMessage(game.getGenMessage() + id);
             clientHandler.sendMessage(message);
         }
-        for (int i=players.length;i<numberOfPlayers;i++) {
+
+        // Add bots if necessary
+        for (int i = players.length; i < numberOfPlayers; i++) {
             Player player = game.join();
             Bot bot = new Bot(player, game, this);
             clientHandlerPlayerHashMap.put(bot, player);
             clients.add(bot);
         }
 
-        List<String> list=databaseManager.getMoves();
+        // Retrieve game moves from the database and send updates to clients
+        List<String> list = databaseManager.getMoves();
         UpdateMessage updateMessage;
-        for(int i=1;i<list.size();i++)
-        {
-            String[] parts=list.get(i).split(" ");
+        for (int i = 1; i < list.size(); i++) {
+            String[] parts = list.get(i).split(" ");
             int id;
-            switch (parts[1]){
+            switch (parts[1]) {
                 case "FAIL":
                     break;
                 case "SKIP":
-                    id=Integer.parseInt(parts[0]);
-                    updateMessage=game.nextMove(new MoveMessage(),new Player(id));
+                    id = Integer.parseInt(parts[0]);
+                    updateMessage = game.nextMove(new MoveMessage(), new Player(id));
                     sendMessage(updateMessage);
                     break;
                 default:
-                    id=Integer.parseInt(parts[0]);
-                    int x1=Integer.parseInt(parts[1]);
-                    int y1=Integer.parseInt(parts[2]);
-                    int x2=Integer.parseInt(parts[3]);
-                    int y2=Integer.parseInt(parts[4]);
-                    updateMessage=game.nextMove(new MoveMessage(x1,y1,x2,y2),game.getPlayer(id));
+                    id = Integer.parseInt(parts[0]);
+                    int x1 = Integer.parseInt(parts[1]);
+                    int y1 = Integer.parseInt(parts[2]);
+                    int x2 = Integer.parseInt(parts[3]);
+                    int y2 = Integer.parseInt(parts[4]);
+                    updateMessage = game.nextMove(new MoveMessage(x1, y1, x2, y2), game.getPlayer(id));
                     sendMessage(updateMessage);
                     break;
             }
@@ -111,6 +115,7 @@ public class LoadSession implements Session {
         System.out.println("456");
         setReady();
     }
+
     /**
      * Adds a new player to the game and maps the client handler to the player.
      *
@@ -123,28 +128,48 @@ public class LoadSession implements Session {
     /**
      * Broadcasts the result of a player's move to all connected clients.
      *
-     * @param moveMessage          The move message containing the player's move.
+     * @param moveMessage The move message containing the player's move.
      * @param clientHandler The client handler representing the player who made the move.
      */
     @Override
     public void broadcastMessage(MoveMessage moveMessage, PlayerHandler clientHandler) {
         UpdateMessage updateMessage = game.nextMove(moveMessage, clientHandlerPlayerHashMap.get(clientHandler));
         sendMessage(updateMessage);
-        String[] parts=updateMessage.content.split(" ");
-        if(parts[parts.length-1].equals("END"))
-        {
-            databaseManager.endGame(Integer.parseInt(parts[parts.length-2]));
+
+        // Check if the game has ended and record the move
+        String[] parts = updateMessage.content.split(" ");
+        if (parts[parts.length - 1].equals("END")) {
+            databaseManager.endGame(Integer.parseInt(parts[parts.length - 2]));
         }
-        System.out.println("recording");
-        if(state.getState().equals(SessionState.READY))
+
+        // Record the move if the session is ready
+        if (state.getState().equals(SessionState.READY))
             databaseManager.recordMove(clientHandlerPlayerHashMap.get(clientHandler).getId()
-                    +" "+updateMessage.content);
+                    + " " + updateMessage.content);
     }
-    private void sendMessage(UpdateMessage updateMessage){
+
+    /**
+     * Sends an update message to all connected clients.
+     *
+     * @param updateMessage The update message to send to the clients.
+     */
+    private void sendMessage(UpdateMessage updateMessage) {
         for (PlayerHandler player : clients) {
             player.sendMessage(updateMessage);
         }
     }
-    public void setReady(){state=state.setReady();}
-    public void setPrepare(){state=state.setPrepare();}
+
+    /**
+     * Sets the session state to ready, indicating that the game is ready to begin.
+     */
+    public void setReady() {
+        state = state.setReady();
+    }
+
+    /**
+     * Sets the session state to prepare, indicating that the game is in a preparation phase.
+     */
+    public void setPrepare() {
+        state = state.setPrepare();
+    }
 }

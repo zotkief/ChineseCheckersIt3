@@ -11,9 +11,9 @@ public class DataOperator {
     private static DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/test_chinese_checkers");
-        dataSource.setUsername("root");
-        dataSource.setPassword("testowe");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/warcaby");
+        dataSource.setUsername("admin");
+        dataSource.setPassword("admin");
         return dataSource;
     }
 
